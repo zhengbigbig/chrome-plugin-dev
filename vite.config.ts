@@ -34,7 +34,7 @@ export default defineConfig({
       input: {
         background: './src/background/index.ts',
         content_script: './src/content-script/index.ts',
-        inject: './src/inject/index.ts',
+        injected: './src/injected/index.ts',
         popup: './index.html',
       },
       output: {
