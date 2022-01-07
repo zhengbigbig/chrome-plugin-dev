@@ -799,7 +799,7 @@ chrome.storage.sync.set({color: 'blue'}, function() {
 
 通过webRequest系列API可以对HTTP请求进行任性地修改、定制，下面是webRequest的几个生命周期：
 
-![这是图片](https://static.sitestack.cn/projects/chrome-plugin-develop/b6541888b74153440e9f0a4847f7b261.png "webRequest")
+![这是图片](https://developer.chrome.com/docs/extensions/reference/webRequest/webrequestapi.png "webRequest")
 
 #### 7.5.1 beforeRequest demo
 ```json
