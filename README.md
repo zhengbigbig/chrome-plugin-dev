@@ -4,10 +4,13 @@
 
 ## 前言
 
-### 开发与调试
+### 开发与调试 
+可参照：https://www.bookstack.cn/read/chrome-plugin-develop/spilt.6.8bdb1aac68bbdc44.md
 - Chrome插件没有严格的项目结构要求，只要保证本目录有一个manifest.json即可
 - 从右上角菜单->更多工具->扩展程序可以进入 插件管理页面，也可以直接在地址栏输入chrome://extensions 访问。
-- 
+- 开发过程使用：yarn dev 可启动对popup页面开发，页面打开
+- 调试过程使用：yarn build 可热更新自动打包，dist丢到chrome://extensions即可，必须开启开发者模式
+- 修改了devtools页面的代码时，需要先在 chrome://extensions 页面按下Ctrl+R重新加载插件，然后关闭再打开开发者工具即可，无需刷新页面（而且只刷新页面不刷新开发者工具的话是不会生效的）。
 
 ## 1. manifest.json 配置
 
@@ -106,7 +109,7 @@
 ## 2. content-scripts
 
 和原始页面共享 DOM，但是不共享 JS。
-虽然可以操作 DOM，但 DOM 不能调用它，也就是无法再 DOM 中通过绑定事件的方式调用 content-scripts 中的代码。
+虽然可以操作 DOM，但 DOM 不能调用它，也就是无法在 DOM 中通过绑定事件的方式调用 content-scripts 中的代码。
 如要访问页面 JS（例如某个 JS 变量），只能通过 injected js 来实现。content-scripts 不能访问绝大部分 chrome.xxx.api，除了下面这 4 种：
 
 - chrome.extension(getURL , inIncognitoContext , lastError , onRequest , sendRequest)
@@ -402,5 +405,531 @@ document.getElementById('get_all_resources').addEventListener('click', function(
  });
 });
 ```
+
+### 5.6 option(选项页)
+
+- 所谓options页，就是插件的设置页面，有2个入口，一个是右键图标有一个“选项”菜单，还有一个在插件管理页面：
+- 点击选项后就是打开一个网页
+
+老版配置
+```json
+{
+ // Chrome40以前的插件配置页写法
+ "options_page": "options.html",
+}
+```
+
+新版配置
+```json
+{
+ "options_ui":
+ {
+ "page": "options.html",
+ // 添加一些默认的样式，推荐使用
+ "chrome_style": true
+ },
+}
+```
+
+- 为了兼容，建议2种都写，如果都写了，Chrome40以后会默认读取新版的方式；
+- 新版options中不能使用alert；
+- 数据存储建议用chrome.storage，因为会随用户自动同步；
+
+### 5.7 omnibox
+
+- omnibox是向用户提供搜索建议的一种方式
+- 注册某个关键字以触发插件
+  
+```json
+{
+ // 向地址栏注册一个关键字以提供搜索建议，只能设置一个关键字
+ "omnibox": { "keyword" : "go" },
+}
+```
+
+```js
+// background.js
+// omnibox 演示
+chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+ console.log('inputChanged: ' + text);
+ if(!text) return;
+ if(text == '美女') {
+  suggest([
+    {content: '中国' + text, description: '你要找“中国美女”吗？'},
+    {content: '日本' + text, description: '你要找“日本美女”吗？'},
+    {content: '泰国' + text, description: '你要找“泰国美女或人妖”吗？'},
+    {content: '韩国' + text, description: '你要找“韩国美女”吗？'}
+  ]);
+ } else if(text == '微博') {
+  suggest([
+    {content: '新浪' + text, description: '新浪' + text},
+    {content: '腾讯' + text, description: '腾讯' + text},
+    {content: '搜狐' + text, description: '搜索' + text},
+  ]);
+ } else {
+  suggest([
+    {content: '百度搜索 ' + text, description: '百度搜索 ' + text},
+    {content: '谷歌搜索 ' + text, description: '谷歌搜索 ' + text},
+  ]);
+ }
+});
+// 当用户接收关键字建议时触发
+chrome.omnibox.onInputEntered.addListener((text) => {
+ console.log('inputEntered: ' + text);
+ if(!text) return;
+ var href = '';
+ if(text.endsWith('美女')) href = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word=' + text;
+ else if(text.startsWith('百度搜索')) href = 'https://www.baidu.com/s?ie=UTF-8&wd=' + text.replace('百度搜索 ', '');
+ else if(text.startsWith('谷歌搜索')) href = 'https://www.google.com.tw/search?q=' + text.replace('谷歌搜索 ', '');
+ else href = 'https://www.baidu.com/s?ie=UTF-8&wd=' + text;
+ openUrlCurrentTab(href);
+});
+// 获取当前选项卡ID
+function getCurrentTabId(callback){
+ chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+  if(callback) callback(tabs.length ? tabs[0].id: null);
+ });
+}
+// 当前标签打开某个链接
+function openUrlCurrentTab(url){
+ getCurrentTabId(tabId => {
+  chrome.tabs.update(tabId, {url: url});
+ })
+}
+```
+
+### 5.8 桌面通知
+
+- Chrome提供了一个chrome.notificationsAPI以便插件推送桌面通知，暂未找到chrome.notifications和HTML5自带的Notification的显著区别及优势。
+- 在后台JS中，无论是使用chrome.notifications还是Notification都不需要申请权限（HTML5方式需要申请权限），直接使用即可
+
+```js
+chrome.notifications.create(null, {
+ type: 'basic',
+ iconUrl: 'img/icon.png',
+ title: '这是标题',
+ message: '您刚才点击了自定义右键菜单！'
+});
+```
+
+## 总结：
+
+### 权限对比
+
+| JS种类          | 可访问的API                                    | DOM访问情况  | JS访问情况 | 直接跨域 |
+|-----------------|------------------------------------------------|--------------|------------|----------|
+| injected script | 和普通JS无任何差别，不能访问任何扩展API        | 可以访问     | 可以访问   | 不可以   |
+| content script  | 只能访问 extension、runtime等部分API           | 可以访问     | 不可以     | 不可以   |
+| popup js        | 可访问绝大部分API，除了devtools系列            | 不可直接访问 | 不可以     | 可以     |
+| background js   | 可访问绝大部分API，除了devtools系列            | 不可直接访问 | 不可以     | 可以     |
+| devtools js     | 只能访问 devtools、extension、runtime等部分API | 可以         | 可以       | 不可以   |
+
+### 调试方式对比
+| JS类型          | 调试方式                 | JS访问情况 | 直接跨域 |
+|-----------------|--------------------------|------------|----------|
+| injected script | 直接普通的F12即可        | 可以访问   | 不可以   |
+| content-script  | 打开Console,如图切换     | 不可以     | 不可以   |
+| popup-js        | popup页面右键审查元素    | 不可以     | 可以     |
+| background      | 插件管理页点击背景页即可 | 不可以     | 可以     |
+| devtools-js     | 暂未找到有效方法         | 可以       | 不可以   |
+
+## 6 消息通信
+
+前面概述了插件中存在的5种JS，background / content-scripts / injected-script / popup / devtools
+这里来介绍它们之间的互相通信，popup和background权限一样，可以视为一类
+### 6.1 互相通信概览
+
+注：-表示不存在或者无意义，或者待验证。
+
+|                 | injected-script                       | content-script                              | popup-js                                          | background-js                                     |
+|-----------------|---------------------------------------|---------------------------------------------|---------------------------------------------------|---------------------------------------------------|
+| injected-script | -                                     | window.postMessage                          | -                                                 | -                                                 |
+| content-script  | window.postMessage                    | -                                           | chrome.runtime.sendMessage chrome.runtime.connect | chrome.runtime.sendMessage chrome.runtime.connect |
+| popup-js        | -                                     | chrome.tabs.sendMessage chrome.tabs.connect | -                                                 | chrome.extension. getBackgroundPage()             |
+| background-js   | -                                     | chrome.tabs.sendMessage chrome.tabs.connect | chrome.extension.getViews                         | -                                                 |
+| devtools-js     | chrome.devtools. inspectedWindow.eval | -                                           | chrome.runtime.sendMessage                        | chrome.runtime.sendMessage                        |
+
+### 6.2 通信详细介绍
+
+#### 6.2.1 popup 与 background 通信
+
+- popup可以直接调用background中JS方法，也可以直接访问background的DOM
+- background访问popup,需要popup处于打开状态
+- 如果background中JS报错，则无法访问
+
+示例1：popup -> background
+```js
+// background.js
+function test(){
+ alert('我是background！');
+}
+// popup.js
+var bg = chrome.extension.getBackgroundPage();
+bg.test(); // 访问bg的函数
+alert(bg.document.body.innerHTML); // 访问bg的DOM
+```
+示例2：background -> popup
+```js
+var views = chrome.extension.getViews({type:'popup'});
+if(views.length > 0) {
+ console.log(views[0].location.href);
+}
+```
+
+#### 6.2.2 popup或者bg 与 content-scripts 通信
+
+- 双方通信直接发送的都是JSON对象，不是JSON字符串，所以无需解析，很方便（当然也可以直接发送字符串)
+- 有些老项目使用的chrome.extension.onMessage，现在建议统一使用chrome.runtime.onMessage
+
+示例1：popup/bg -> content-scripts
+```js
+// popup/bg发送消息
+function sendMessageToContentScript(message, callback){
+ chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+  chrome.tabs.sendMessage(tabs[0].id, message, function(response){
+      if(callback) callback(response);
+  });
+ });
+}
+sendMessageToContentScript({cmd:'test', value:'你好，我是popup！'}, function(response) { 
+  console.log('来自content的回复：'+response); 
+});
+// content接收消息
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+ // console.log(sender.tab ?"from a content script:" + sender.tab.url :"from the extension");
+ if(request.cmd == 'test') alert(request.value);
+ sendResponse('我收到了你的消息！');
+});
+```
+示例2：content-scripts -> popup/bg
+```js
+// content-scripts发送消息
+chrome.runtime.sendMessage({greeting: '你好，我是content-script呀，我主动发消息给后台！'}, function(response) {
+ console.log('收到来自后台的回复：' + response);
+});
+// popup/bg接收消息
+// 监听来自content-script的消息
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+ console.log('收到来自content-script的消息：');
+ console.log(request, sender, sendResponse);
+ sendResponse('我是后台，我已收到你的消息：' + JSON.stringify(request));
+});
+```
+
+注意：
+- content_scripts向popup主动发消息的前提是popup必须打开！否则需要利用background作中转；
+- 如果background和popup同时监听，那么它们都可以同时收到消息，但是只有一个可以sendResponse，一个先发送了，那么另外一个再发送就无效；
+
+#### 6.2.3 injected 与 content_scripts通信
+
+content-script和页面内的脚本（injected-script自然也属于页面内的脚本）之间唯一共享的东西就是页面的DOM元素，有2种方法可以实现二者通讯：
+  1. 可以通过window.postMessage和window.addEventListener来实现二者消息通讯；（推荐）
+    ```js
+      // injected.js
+      window.postMessage({"test": '你好！'}, '*');
+      // content_scripts
+      window.addEventListener("message", function(e){
+        console.log(e.data);
+      }, false);
+    ```
+  2. 通过自定义DOM事件来实现；
+    ```js
+      // injected.js
+      var customEvent = document.createEvent('Event');
+      customEvent.initEvent('myCustomEvent', true, true);
+      function fireCustomEvent(data) {
+       hiddenDiv = document.getElementById('myCustomEventDiv');
+       hiddenDiv.innerText = data
+       hiddenDiv.dispatchEvent(customEvent);
+      }
+      fireCustomEvent('你好，我是普通JS！');
+
+      // content-script
+      var hiddenDiv = document.getElementById('myCustomEventDiv');
+      if(!hiddenDiv) {
+        hiddenDiv = document.createElement('div');
+        hiddenDiv.style.display = 'none';
+        document.body.appendChild(hiddenDiv);
+      }
+      hiddenDiv.addEventListener('myCustomEvent', function() {
+      var eventData = document.getElementById('myCustomEventDiv').innerText;
+      console.log('收到自定义事件消息：' + eventData);
+      });
+    ```
+
+#### 6.2.4 injected 与 popup 通信
+
+injected无法直接与popup通信,必须借助content-scripts作为中间
+
+
+### 6.3 长连接和短连接
+
+Chrome插件有2种通信方式：
+- 短连接
+  - chrome.tabs.sendMessage / chrome.runtime.sendMessage
+- 长连接
+  - chrome.tabs.connect / chrome.runtime.connect
+
+示例：长连接代码
+
+```js
+// popup.js
+getCurrentTabId((tabId) => {
+  var port = chrome.tabs.connect(tabId, {name: 'test-connect'});
+  port.postMessage({question: '你是谁啊？'});
+  port.onMessage.addListener(function(msg) {
+    alert('收到消息：'+msg.answer);
+    if(msg.answer && msg.answer.startsWith('我是')) {
+      port.postMessage({question: '哦，原来是你啊！'});
+    }
+  });
+});
+// content-scripts
+// 监听长连接
+chrome.runtime.onConnect.addListener(function(port) {
+ console.log(port);
+ if(port.name == 'test-connect') {
+  port.onMessage.addListener(function(msg) {
+    console.log('收到长连接消息：', msg);
+    if(msg.question == '你是谁啊？') port.postMessage({answer: '我是你爸！'});
+  });
+ }
+});
+```
+
+## 7. 补充
+
+- 动态注入或执行JS
+- 动态注入CSS
+- 获取当前窗口ID
+- 获取当前标签页ID
+- 本地存储
+- webRequest
+- 国际化
+
+### 7.1 动态注入或执行JS
+
+虽然在background和popup中无法直接访问页面DOM，但是可以通过chrome.tabs.executeScript来执行脚本，从而实现访问web页面的DOM（注意，这种方式也不能直接访问页面JS）。
+
+```json
+{
+ "name": "动态JS注入演示",
+ ...
+ "permissions": [
+ "tabs", "http://*/*", "https://*/*"
+ ],
+ ...
+}
+```
+```js
+// 动态执行JS代码
+chrome.tabs.executeScript(tabId, {code: 'document.body.style.backgroundColor="red"'});
+// 动态执行JS文件
+chrome.tabs.executeScript(tabId, {file: 'some-script.js'});
+```
+
+### 7.2 动态注入CSS
+
+```json
+{
+ "name": "动态CSS注入演示",
+ ...
+ "permissions": [
+ "tabs", "http://*/*", "https://*/*"
+ ],
+ ...
+}
+```
+```js
+// 动态执行CSS代码，TODO，这里有待验证
+chrome.tabs.insertCSS(tabId, {code: 'xxx'});
+// 动态执行CSS文件
+chrome.tabs.insertCSS(tabId, {file: 'some-style.css'});
+```
+
+### 7.3 获取当前窗口ID
+
+```js
+chrome.windows.getCurrent(function(currentWindow){
+ console.log('当前窗口ID：' + currentWindow.id);
+});
+```
+
+### 7.4 获取当前标签页ID
+
+```js
+// 获取当前选项卡ID
+function getCurrentTabId(callback){
+ chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+  if(callback) callback(tabs.length ? tabs[0].id: null);
+ });
+}
+// 另一种，只有少部分时候不一样，例如当窗口最小化时
+// 获取当前选项卡ID
+function getCurrentTabId2(){
+ chrome.windows.getCurrent(function(currentWindow){
+  chrome.tabs.query({active: true, windowId: currentWindow.id}, function(tabs){
+    if(callback) callback(tabs.length ? tabs[0].id: null);
+  });
+ });
+}
+```
+
+### 7.4 本地存储
+
+本地存储建议用chrome.storage而不是普通的localStorage，区别有好几点，个人认为最重要的2点区别是：
+- chrome.storage是针对插件全局的，即使你在background中保存的数据，在content-script也能获取到；
+- chrome.storage.sync可以跟随当前登录用户自动同步，这台电脑修改的设置会自动同步到其它电脑，很方便，如果没有登录或者未联网则先保存到本地，等登录了再同步至网络；
+
+需要声明storage权限，有chrome.storage.sync和chrome.storage.local2种方式可供选择，使用示例如下：
+
+```js
+// 读取数据，第一个参数是指定要读取的key以及设置默认值
+chrome.storage.sync.get({color: 'red', age: 18}, function(items) {
+ console.log(items.color, items.age);
+});
+// 保存数据
+chrome.storage.sync.set({color: 'blue'}, function() {
+ console.log('保存成功！');
+});
+
+```
+
+### 7.5 webRequest
+
+通过webRequest系列API可以对HTTP请求进行任性地修改、定制，下面是webRequest的几个生命周期：
+
+![这是图片](https://static.sitestack.cn/projects/chrome-plugin-develop/b6541888b74153440e9f0a4847f7b261.png "webRequest")
+
+#### 7.5.1 beforeRequest demo
+```json
+//manifest.json
+{
+ // 权限申请
+ "permissions":
+ [
+ "webRequest", // web请求
+ "webRequestBlocking", // 阻塞式web请求
+ "storage", // 插件本地存储
+ "http://*/*", // 可以通过executeScript或者insertCSS访问的网站
+ "https://*/*" // 可以通过executeScript或者insertCSS访问的网站
+ ],
+}
+```
+```js
+// background.js
+// 是否显示图片
+var showImage;
+chrome.storage.sync.get({showImage: true}, function(items) {
+ showImage = items.showImage;
+});
+// web请求监听，最后一个参数表示阻塞式，需单独声明权限：webRequestBlocking
+chrome.webRequest.onBeforeRequest.addListener(details => {
+ // cancel 表示取消本次请求
+ if(!showImage && details.type == 'image') return {cancel: true};
+ // 简单的音视频检测
+ // 大部分网站视频的type并不是media，且视频做了防下载处理，所以这里仅仅是为了演示效果，无实际意义
+ if(details.type == 'media') {
+  chrome.notifications.create(null, {
+  type: 'basic',
+  iconUrl: 'img/icon.png',
+  title: '检测到音视频',
+  message: '音视频地址：' + details.url,
+  });
+ }
+}, {urls: ["<all_urls>"]}, ["blocking"]);
+```
+
+#### 7.5.2 常用事件使用示例
+
+```js
+// 每次请求前触发，可以拿到 requestBody 数据，同时可以对本次请求作出干预修改
+chrome.webRequest.onBeforeRequest.addListener(details => {
+ console.log('onBeforeRequest', details);
+}, {urls: ['<all_urls>']}, ['blocking', 'extraHeaders', 'requestBody']);
+// 发送header之前触发，可以拿到请求headers，也可以添加、修改、删除headers
+// 但使用有一定限制，一些特殊头部可能拿不到或者存在特殊情况，详见官网文档
+chrome.webRequest.onBeforeSendHeaders.addListener(details => {
+ console.log('onBeforeSendHeaders', details);
+}, {urls: ['<all_urls>']}, ['blocking', 'extraHeaders', 'requestHeaders']);
+// 开始响应触发，可以拿到服务端返回的headers
+chrome.webRequest.onResponseStarted.addListener(details => {
+ console.log('onResponseStarted', details);
+}, {urls: ['<all_urls>']}, ['extraHeaders', 'responseHeaders']);
+// 请求完成触发，能拿到的数据和onResponseStarted一样，注意无法拿到responseBody
+chrome.webRequest.onCompleted.addListener(details => {
+ console.log('onCompleted', details);
+}, {urls: ['<all_urls>']}, ['extraHeaders', 'responseHeaders']);
+```
+上面示例中提到，使用webRequestAPI是无法拿到responseBody的，想要拿到的话只能采取一些变通方法，例如：
+
+ 1. 重写XmlHttpRequest和fetch，增加自定义拦截事件，缺点是实现方式可能有点脏，重写不好的话可能影响正常页面；
+ 2. devtools的chrome.devtools.network.onRequestFinishedAPI可以拿到返回的body，缺点是必须打开开发者面板；
+ 3. 使用chrome.debugger.sendCommand发送Network.getResponseBody命令来获取body内容，缺点也很明显，会有一个恼人的提示
+
+上述几种方法的实现方式这个链接基本上都有，可以参考下：https://stackoverflow.com/questions/18534771/chrome-extension-how-to-get-http-response-body
+
+### 7.6 国际化
+
+插件根目录新建一个名为_locales的文件夹，再在下面新建一些语言的文件夹，如en、zh_CN、zh_TW，然后再在每个文件夹放入一个messages.json，同时必须在清单文件中设置default_locale。
+
+```json
+_locales\en\messages.json内容：
+{
+ "pluginDesc": {"message": "A simple chrome extension demo"},
+ "helloWorld": {"message": "Hello World!"}
+}
+_locales\zh_CN\messages.json内容：
+
+{
+ "pluginDesc": {"message": "一个简单的Chrome插件demo"},
+ "helloWorld": {"message": "你好啊，世界！"}
+}
+在manifest.json和CSS文件中通过__MSG_messagename__引入，如：
+
+{
+ "description": "__MSG_pluginDesc__",
+ // 默认语言
+ "default_locale": "zh_CN",
+}
+```
+JS中则直接chrome.i18n.getMessage("helloWorld")。
+
+测试时，通过给chrome建立一个不同的快捷方式chrome.exe --lang=en来切换语言
+
+## 8. 常用API总结
+
+比较常用API
+
+- chrome.cookies
+- chrome.runtime
+- chrome.tabs
+- chrome.webRequest
+- chrome.window
+- chrome.storage
+- chrome.contextMenus
+- chrome.devtools
+- chrome.extension
+
+### 8.1 chrome.cookies
+
+```js
+// 获取某个网站的所有cookie：
+const url = 'https://www.baidu.com';
+chrome.cookies.getAll({url}, cookies => {
+ console.log(cookies);
+});
+// 清除某个网站的某个cookie：
+const url = 'https://www.baidu.com';
+const cookieName = 'userName';
+chrome.cookies.remove({url, name: cookieName}, details => {});
+```
+### 8.2 chrome.runtime
+```js
+chrome.runtime.id // 获取插件id
+chrome.runtime.getURL('xxx.html') //获取xxx.html在插件中的地址
+```
+  
+
 
 
