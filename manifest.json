@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "chrome-plugin-dev",
+  "name": "qiankun-devtool",
   "version": "0.0.1",
-  "description": "demo",
+  "description": "乾坤开发者工具",
   "icons": {
     "16": "assets/icon.png",
     "48": "assets/icon.png",

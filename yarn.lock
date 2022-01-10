@@ -257,15 +257,6 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@rollup/pluginutils@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.npmmirror.com/@rollup/pluginutils/download/@rollup/pluginutils-3.1.0.tgz#706b4524ee6dc8b103b3c995533e5ad680c02b9b"
-  integrity sha1-cGtFJO5tyLEDs8mVUz5a1oDAK5s=
-  dependencies:
-    "@types/estree" "0.0.39"
-    estree-walker "^1.0.1"
-    picomatch "^2.2.2"
-
 "@rollup/pluginutils@^4.1.2":
   version "4.1.2"
   resolved "https://registry.npmmirror.com/@rollup/pluginutils/download/@rollup/pluginutils-4.1.2.tgz#ed5821c15e5e05e32816f5fb9ec607cdf5a75751"
@@ -274,18 +265,13 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@types/chrome@^0.0.174":
-  version "0.0.174"
-  resolved "https://registry.npmmirror.com/@types/chrome/download/@types/chrome-0.0.174.tgz#ee1679f3a4fc57bb2c3b76957845a68afb7d478c"
-  integrity sha512-x5kjvNdwDtOnT+vbnksj69pDl0u9P/WH9LbQWJawLqGgkBRO3AN/xzTxTPgLpp3IqCbuwfp7bRCHqkkaZguzWw==
+"@types/chrome@^0.0.175":
+  version "0.0.175"
+  resolved "https://registry.npmmirror.com/@types/chrome/download/@types/chrome-0.0.175.tgz#bbd13020cf8903d37598393552ca5b8c6d9451c7"
+  integrity sha512-nJy7MadK9Y4sTu4Eouv+JscyEpsEWyvSN8hNphWSgzGBV2M4prxbvPoYQHPudcTy+OecT7iiPgfYq8bsmMzzcw==
   dependencies:
     "@types/filesystem" "*"
     "@types/har-format" "*"
-
-"@types/estree@0.0.39":
-  version "0.0.39"
-  resolved "https://registry.npmmirror.com/@types/estree/download/@types/estree-0.0.39.tgz?cache=0&sync_timestamp=1637264753186&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2F%40types%2Festree%2Fdownload%2F%40types%2Festree-0.0.39.tgz#e177e699ee1b8c22d23174caaa7422644389509f"
-  integrity sha1-4Xfmme4bjCLSMXTKqnQiZEOJUJ8=
 
 "@types/filesystem@*":
   version "0.0.32"
@@ -380,11 +366,6 @@ array-union@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npm.taobao.org/array-union/download/array-union-2.1.0.tgz#b798420adbeb1de828d84acd8a2e23d3efe85e8d"
   integrity sha1-t5hCCtvrHego2ErNii4j0+/oXo0=
-
-at-least-node@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npm.taobao.org/at-least-node/download/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
-  integrity sha1-YCzUtG6EStTv/JKoARo8RuAjjcI=
 
 balanced-match@^1.0.0:
   version "1.0.2"
@@ -628,11 +609,6 @@ escape-string-regexp@^1.0.5:
   resolved "https://registry.nlark.com/escape-string-regexp/download/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
-estree-walker@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmmirror.com/estree-walker/download/estree-walker-1.0.1.tgz#31bc5d612c96b704106b477e6dd5d8aa138cb700"
-  integrity sha1-MbxdYSyWtwQQa0d+bdXYqhOMtwA=
-
 estree-walker@^2.0.1:
   version "2.0.2"
   resolved "https://registry.npmmirror.com/estree-walker/download/estree-walker-2.0.2.tgz#52f010178c2a4c117a7757cfe942adb7d2da4cac"
@@ -671,16 +647,6 @@ fs-extra@^8.1.0:
     graceful-fs "^4.2.0"
     jsonfile "^4.0.0"
     universalify "^0.1.0"
-
-fs-extra@^9.0.1:
-  version "9.1.0"
-  resolved "https://registry.nlark.com/fs-extra/download/fs-extra-9.1.0.tgz#5954460c764a8da2094ba3554bf839e6b9a7c86d"
-  integrity sha1-WVRGDHZKjaIJS6NVS/g55rmnyG0=
-  dependencies:
-    at-least-node "^1.0.0"
-    graceful-fs "^4.2.0"
-    jsonfile "^6.0.1"
-    universalify "^2.0.0"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -845,15 +811,6 @@ jsonfile@^4.0.0:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jsonfile@^6.0.1:
-  version "6.1.0"
-  resolved "https://registry.npm.taobao.org/jsonfile/download/jsonfile-6.1.0.tgz?cache=0&sync_timestamp=1604161844511&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fjsonfile%2Fdownload%2Fjsonfile-6.1.0.tgz#bc55b2634793c679ec6403094eb13698a6ec0aae"
-  integrity sha1-vFWyY0eTxnnsZAMJTrE2mKbsCq4=
-  dependencies:
-    universalify "^2.0.0"
-  optionalDependencies:
-    graceful-fs "^4.1.6"
-
 less@^4.1.2:
   version "4.1.2"
   resolved "https://registry.npmmirror.com/less/download/less-4.1.2.tgz#6099ee584999750c2624b65f80145f8674e4b4b0"
@@ -882,13 +839,6 @@ loose-envify@^1.1.0:
   integrity sha1-ce5R+nvkyuwaY4OffmgtgTLTDK8=
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
-
-magic-string@^0.25.7:
-  version "0.25.7"
-  resolved "https://registry.nlark.com/magic-string/download/magic-string-0.25.7.tgz?cache=0&sync_timestamp=1618847046304&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fmagic-string%2Fdownload%2Fmagic-string-0.25.7.tgz#3f497d6fd34c669c6798dcb821f2ef31f5445051"
-  integrity sha1-P0l9b9NMZpxnmNy4IfLvMfVEUFE=
-  dependencies:
-    sourcemap-codec "^1.4.4"
 
 make-dir@^2.1.0:
   version "2.1.0"
@@ -1070,22 +1020,6 @@ rollup-plugin-copy@^3.4.0:
     globby "10.0.1"
     is-plain-object "^3.0.0"
 
-rollup-plugin-mv@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.npmmirror.com/rollup-plugin-mv/download/rollup-plugin-mv-0.0.1.tgz#faf59377e322353bcfb37b36079107c2b4f131c3"
-  integrity sha1-+vWTd+MiNTvPs3s2B5EHwrTxMcM=
-  dependencies:
-    fs-extra "^9.0.1"
-
-rollup-plugin-rename@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmmirror.com/rollup-plugin-rename/download/rollup-plugin-rename-1.0.1.tgz#d46a6a75373f133752e91564fd8238ae1162e687"
-  integrity sha1-1GpqdTc/EzdS6RVk/YI4rhFi5oc=
-  dependencies:
-    "@rollup/pluginutils" "^3.1.0"
-    estree-walker "^2.0.1"
-    magic-string "^0.25.7"
-
 rollup@^2.59.0:
   version "2.63.0"
   resolved "https://registry.npmmirror.com/rollup/download/rollup-2.63.0.tgz#fe2f7fec2133f3fab9e022b9ac245628d817c6bb"
@@ -1153,11 +1087,6 @@ source-map@~0.6.0:
   resolved "https://registry.nlark.com/source-map/download/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha1-dHIq8y6WFOnCh6jQu95IteLxomM=
 
-sourcemap-codec@^1.4.4:
-  version "1.4.8"
-  resolved "https://registry.npm.taobao.org/sourcemap-codec/download/sourcemap-codec-1.4.8.tgz#ea804bd94857402e6992d05a38ef1ae35a9ab4c4"
-  integrity sha1-6oBL2UhXQC5pktBaOO8a41qatMQ=
-
 supports-color@^5.3.0:
   version "5.5.0"
   resolved "https://registry.npmmirror.com/supports-color/download/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
@@ -1196,11 +1125,6 @@ universalify@^0.1.0:
   version "0.1.2"
   resolved "https://registry.npm.taobao.org/universalify/download/universalify-0.1.2.tgz#b646f69be3942dabcecc9d6639c80dc105efaa66"
   integrity sha1-tkb2m+OULavOzJ1mOcgNwQXvqmY=
-
-universalify@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.nlark.com/universalify/download/universalify-2.0.0.tgz#75a4984efedc4b08975c5aeb73f530d02df25717"
-  integrity sha1-daSYTv7cSwiXXFrrc/Uw0C3yVxc=
 
 vite@^2.7.2:
   version "2.7.10"

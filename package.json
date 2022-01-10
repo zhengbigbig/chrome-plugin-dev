@@ -7,13 +7,13 @@
     "preview": "vite preview --port 8080"
   },
   "dependencies": {
-    "@types/chrome": "^0.0.174",
     "classnames": "^2.3.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.175",
     "@types/node": "^17.0.8",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
